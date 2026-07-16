@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4A3450">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="The Vocal Edit">
+<title>The Vocal Edit</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF5F1;
+    --card:#FFFFFF;
+    --ink:#2E2630;
+    --plum:#4A3450;
+    --plum-soft:#6B5071;
+    --honey:#D9943C;
+    --honey-soft:#F0C98A;
+    --line:#EBDFD7;
+    --muted:#8C7F84;
+    --shadow:0 1px 2px rgba(46,38,48,.05), 0 6px 20px rgba(46,38,48,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Karla",system-ui,-apple-system,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.45;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:520px;margin:0 auto;padding:20px 18px 64px}
+  .display{font-family:"Fraunces",Georgia,serif}
+
+  /* ---- header / nav ---- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;min-height:32px}
+  .back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:var(--plum);
+    font:600 15px/1 "Karla",sans-serif;cursor:pointer;padding:8px 4px;margin-left:-4px}
+  .back svg{width:16px;height:16px}
+  .gear{background:none;border:0;color:var(--muted);cursor:pointer;padding:8px;border-radius:10px}
+  .gear:hover{color:var(--plum)}
+  .gear svg{width:22px;height:22px;display:block}
+  .brand{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:19px;color:var(--plum);letter-spacing:-.01em}
+
+  .eyebrow{font:700 12px/1 "Karla",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--honey)}
+  h1.title{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:34px;line-height:1.04;letter-spacing:-.02em;margin:6px 0 4px}
+  .lede{color:var(--muted);font-size:15px;margin:0 0 26px;max-width:38ch}
+
+  /* ---- week cards (home) ---- */
+  .weeks{display:flex;flex-direction:column;gap:12px}
+  .week-card{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+    border-radius:18px;padding:16px 18px;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s ease, box-shadow .12s ease}
+  .week-card:active{transform:scale(.99)}
+  .week-card .wc-top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:18px}
+  .week-card .wc-eye{font:700 11px/1 "Karla";letter-spacing:.14em;text-transform:uppercase;color:var(--plum-soft)}
+  .week-card .wc-theme{font-family:"Fraunces",serif;font-weight:500;font-size:22px;letter-spacing:-.01em;margin:3px 0 2px;color:var(--ink)}
+  .week-card .wc-song{font-size:14px;color:var(--muted);min-height:20px}
+  .week-card .wc-song.set{color:var(--plum)}
+  .week-card .wc-song.with-art{display:flex;align-items:center;gap:10px;min-height:0;margin-top:2px}
+  .week-card .wcs-thumb{flex:0 0 auto;width:40px;height:40px;border-radius:8px;object-fit:cover;box-shadow:var(--shadow)}
+  .week-card .wcs-text{min-width:0}
+  .week-card .wcs-title{font-weight:600;font-size:14.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .week-card .wcs-artist{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dots{display:flex;gap:6px;margin-top:12px;align-items:center}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+  .dot.full{background:var(--honey)}
+  .dots .count{margin-left:8px;font-size:12.5px;color:var(--muted);font-weight:600}
+
+  /* ---- week screen ---- */
+  .song-field{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:0 0 22px;box-shadow:var(--shadow);position:relative}
+  .song-field label{display:block;font:700 11px/1 "Karla";letter-spacing:.14em;text-transform:uppercase;color:var(--honey);margin-bottom:10px}
+  .song-search{position:relative;display:flex;align-items:center;gap:9px;border-bottom:1.5px solid var(--line);padding-bottom:7px}
+  .song-search .si{flex:0 0 auto;color:var(--muted)}
+  .song-search .si svg{width:18px;height:18px;display:block}
+  .song-search input{flex:1 1 auto;width:100%;border:0;background:transparent;font-family:"Fraunces",serif;font-size:20px;color:var(--ink);padding:0;outline:none}
+  .song-search input::placeholder{color:#C9BCB4;font-style:italic;font-size:18px}
+  .song-search:focus-within{border-bottom-color:var(--honey)}
+  .spin{flex:0 0 auto;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--honey);border-radius:50%;animation:sp .7s linear infinite;display:none}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .results{list-style:none;margin:10px 0 0;padding:0;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#fff;display:none}
+  .results.show{display:block}
+  .results li{display:flex;align-items:center;gap:11px;padding:10px 11px;cursor:pointer;border-bottom:1px solid var(--line)}
+  .results li:last-child{border-bottom:0}
+  .results li:active,.results li.kbd{background:#F6ECE3}
+  .results li .thumb{flex:0 0 auto;width:42px;height:42px;border-radius:8px;background:var(--paper);object-fit:cover;display:flex;align-items:center;justify-content:center;color:#CDBFB7}
+  .results li .thumb svg{width:18px;height:18px}
+  .results li .rmeta{min-width:0;flex:1 1 auto}
+  .results li .rt{font-weight:600;font-size:14.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .results li .ra{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .results li.as-typed{background:var(--paper)}
+  .results li.as-typed .rt{color:var(--plum)}
+  .results .rhint{padding:9px 12px;font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+
+  .selected{display:flex;align-items:center;gap:13px}
+  .selected .art{flex:0 0 auto;width:58px;height:58px;border-radius:11px;background:var(--paper);object-fit:cover;display:flex;align-items:center;justify-content:center;color:#CDBFB7;box-shadow:var(--shadow)}
+  .selected .art svg{width:24px;height:24px}
+  .selected .smeta{flex:1 1 auto;min-width:0}
+  .selected .stitle{font-family:"Fraunces",serif;font-weight:500;font-size:20px;line-height:1.15;color:var(--ink)}
+  .selected .sartist{font-size:13.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .selected .sactions{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+  .selected a.spotify{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:#1DB954;color:#fff;font-weight:700;font-size:12px;padding:7px 11px;border-radius:9px}
+  .selected a.spotify svg{width:13px;height:13px}
+  .selected button.change{background:none;border:1px solid var(--line);color:var(--plum);font:600 12px "Karla";padding:7px 11px;border-radius:9px;cursor:pointer}
+
+  .day-list{display:flex;flex-direction:column;gap:10px}
+  .day-row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);
+    border:1px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s ease}
+  .day-row:active{transform:scale(.99)}
+  .day-row .num{flex:0 0 auto;width:38px;height:38px;border-radius:11px;background:var(--paper);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-family:"Fraunces",serif;font-weight:600;font-size:17px;color:var(--plum)}
+  .day-row.done .num{background:var(--plum);color:#fff;border-color:var(--plum)}
+  .day-row .num svg{width:18px;height:18px;stroke-width:3.2}
+  .day-row .dr-body{flex:1 1 auto;min-width:0}
+  .day-row .dr-eye{font:700 10.5px/1 "Karla";letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .day-row .dr-assign{font-size:16px;font-weight:600;color:var(--ink);margin-top:3px}
+  .day-row .chev{flex:0 0 auto;color:#CDBFB7}
+  .day-row .chev svg{width:18px;height:18px;display:block}
+  .mini{flex:0 0 auto;font-size:12px;color:var(--muted);font-weight:600}
+
+  /* ---- day screen ---- */
+  .day-head{display:flex;gap:18px;align-items:center;margin-bottom:8px}
+  .ring-wrap{flex:0 0 auto;position:relative;width:96px;height:96px}
+  .ring{width:96px;height:96px;transform:rotate(-90deg)}
+  .ring-bg{fill:none;stroke:var(--line);stroke-width:9}
+  .ring-fg{fill:none;stroke:var(--honey);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+  .ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-label .n{font-family:"Fraunces",serif;font-weight:600;font-size:22px;color:var(--plum);line-height:1}
+  .ring-label .t{font-size:10px;color:var(--muted);letter-spacing:.04em;margin-top:2px}
+  .day-head .dh-text .dh-eye{font:700 11px/1 "Karla";letter-spacing:.14em;text-transform:uppercase;color:var(--honey)}
+  .day-head .dh-text h1{font-family:"Fraunces",serif;font-weight:500;font-size:27px;line-height:1.06;letter-spacing:-.01em;margin:6px 0 0}
+  .day-head .dh-text .dh-song{font-size:13.5px;color:var(--muted);margin-top:4px}
+
+  section.block{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;margin-top:14px;box-shadow:var(--shadow)}
+  .block-h{display:flex;align-items:center;gap:9px;margin-bottom:13px}
+  .block-h .bi{width:26px;height:26px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--paper);color:var(--plum)}
+  .block-h .bi svg{width:15px;height:15px}
+  .block-h h2{font-family:"Fraunces",serif;font-weight:600;font-size:17px;margin:0;letter-spacing:-.005em}
+  .block-h .sub{font-size:12.5px;color:var(--muted);margin-left:auto}
+
+  /* warm-up library */
+  .lib{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .lib a{display:flex;align-items:center;gap:8px;text-decoration:none;border:1px solid var(--line);border-radius:13px;
+    padding:11px 12px;color:var(--ink);background:var(--paper);font-weight:600;font-size:13.5px;line-height:1.2;transition:border-color .12s,background .12s}
+  .lib a:active{background:#F6ECE3}
+  .lib a .play{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center}
+  .lib a .play svg{width:9px;height:9px;margin-left:1px}
+
+  /* checklists */
+  .checks{display:flex;flex-direction:column}
+  .check{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+    padding:11px 2px;font:inherit;color:var(--ink);border-bottom:1px solid var(--line)}
+  .checks .check:last-child{border-bottom:0}
+  .check .box{flex:0 0 auto;width:24px;height:24px;border-radius:8px;border:2px solid #D7CABF;background:#fff;
+    display:flex;align-items:center;justify-content:center;transition:all .14s ease}
+  .check .box svg{width:14px;height:14px;color:#fff;opacity:0;transform:scale(.5);transition:all .14s ease}
+  .check .lbl{font-size:15.5px;font-weight:500;transition:color .14s}
+  .check[aria-pressed="true"] .box{background:var(--plum);border-color:var(--plum)}
+  .check[aria-pressed="true"] .box svg{opacity:1;transform:scale(1)}
+  .check[aria-pressed="true"] .lbl{color:var(--muted);text-decoration:line-through;text-decoration-color:#D7CABF}
+
+  /* conditioning */
+  .work{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+  .work .wname{font-family:"Fraunces",serif;font-weight:500;font-size:18px;flex:1 1 auto}
+  .work a.res{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--plum);color:#fff;
+    font-weight:700;font-size:12.5px;padding:8px 13px;border-radius:11px}
+  .work a.res svg{width:13px;height:13px}
+  .edit-link{display:block;background:none;border:0;color:var(--honey);font:600 12.5px "Karla";cursor:pointer;padding:8px 2px 2px;margin-top:6px}
+
+  /* notes */
+  .notes{width:100%;min-height:96px;resize:vertical;border:1px solid var(--line);border-radius:13px;
+    background:var(--paper);padding:12px 13px;font:15px/1.5 "Karla",sans-serif;color:var(--ink);outline:none}
+  .notes:focus{border-color:var(--honey);background:#fff}
+  .notes::placeholder{color:#C2B4AB}
+
+  /* day complete */
+  .complete-btn{width:100%;margin-top:16px;border:1.5px solid var(--plum);background:#fff;color:var(--plum);
+    font:700 16px "Karla";padding:15px;border-radius:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .15s}
+  .complete-btn svg{width:19px;height:19px}
+  .complete-btn.done{background:var(--plum);color:#fff;border-color:var(--plum)}
+  .complete-btn:active{transform:scale(.99)}
+
+  /* settings sheet */
+  .overlay{position:fixed;inset:0;background:rgba(46,38,48,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .overlay.open{display:flex}
+  .sheet{background:var(--paper);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:8px 20px calc(28px + env(safe-area-inset-bottom));max-height:86vh;overflow:auto}
+  .grab{width:38px;height:4px;border-radius:4px;background:#D7CABF;margin:10px auto 16px}
+  .sheet h2{font-family:"Fraunces",serif;font-weight:600;font-size:22px;margin:0 0 4px}
+  .sheet .shsub{color:var(--muted);font-size:14px;margin:0 0 20px}
+  .set-group{margin-bottom:22px}
+  .set-group h3{font:700 11px/1 "Karla";letter-spacing:.14em;text-transform:uppercase;color:var(--honey);margin:0 0 10px}
+  .set-row{margin-bottom:12px}
+  .set-row label{display:block;font-size:13px;font-weight:600;color:var(--plum);margin-bottom:5px}
+  .set-row input{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:14px "Karla";background:#fff;color:var(--ink);outline:none}
+  .set-row input:focus{border-color:var(--honey)}
+  .tip{background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px 14px;font-size:13.5px;color:var(--muted);line-height:1.5}
+  .tip b{color:var(--plum)}
+  .danger{width:100%;border:1.5px solid #C98B8B;background:#fff;color:#A85252;font:700 15px "Karla";padding:13px;border-radius:13px;cursor:pointer;margin-top:6px}
+  .closebtn{width:100%;background:var(--plum);color:#fff;border:0;font:700 16px "Karla";padding:14px;border-radius:14px;cursor:pointer;margin-top:18px}
+
+  .save-warn{background:#FBEED6;border:1px solid var(--honey-soft);color:#8a5a14;border-radius:13px;padding:11px 14px;font-size:13px;margin-bottom:18px;line-height:1.45}
+
+  /* ---- celebration + completed states ---- */
+  @keyframes boxpop{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
+  .check .box.pop{animation:boxpop .34s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes ringpulse{0%{transform:rotate(-90deg) scale(1)}40%{transform:rotate(-90deg) scale(1.07)}100%{transform:rotate(-90deg) scale(1)}}
+  .ring.pulse{animation:ringpulse .6s ease}
+  @keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(217,148,60,0)}50%{box-shadow:0 0 0 6px rgba(217,148,60,.18)}}
+  .complete-btn.justdone{animation:glow 1s ease}
+  .complete-btn.ready{animation:glow 1.4s ease infinite}
+
+  /* cheer toast */
+  .cheer{position:fixed;left:50%;top:34%;transform:translate(-50%,-12px) scale(.9);z-index:210;
+    display:flex;align-items:center;gap:12px;background:var(--plum);color:#fff;
+    padding:14px 20px 14px 16px;border-radius:18px;box-shadow:0 12px 40px rgba(46,38,48,.35);
+    opacity:0;transition:opacity .28s ease, transform .34s cubic-bezier(.34,1.56,.64,1);max-width:84vw;pointer-events:none}
+  .cheer.in{opacity:1;transform:translate(-50%,0) scale(1)}
+  .cheer .cheer-ic{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--honey);display:flex;align-items:center;justify-content:center}
+  .cheer .cheer-ic svg{width:19px;height:19px;color:#fff}
+  .cheer .ct{font-family:"Fraunces",serif;font-weight:600;font-size:18px;line-height:1.1}
+  .cheer .cs{font-size:13px;color:var(--honey-soft);margin-top:2px}
+
+  /* week-card complete */
+  .week-card.complete{border-color:var(--honey-soft);background:linear-gradient(180deg,#FFFDF8 0%,#FFF7EC 100%)}
+  .wc-top{position:relative}
+  .wc-badge{display:inline-flex;align-items:center;gap:5px;background:var(--honey);color:#fff;
+    font:700 10px/1 "Karla";letter-spacing:.1em;text-transform:uppercase;padding:5px 9px 5px 7px;border-radius:20px}
+  .wc-badge svg{width:12px;height:12px;stroke-width:3.4}
+  .dot.full{position:relative}
+  @keyframes dotpop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+  .week-card.complete .count{color:var(--honey);font-weight:700}
+
+  *:focus-visible{outline:2.5px solid var(--honey);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  @media (max-width:360px){.lib{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-label="Settings" id="sheet"></div>
+</div>
+
+<script>
+/* ============ program (fixed structure) ============ */
+const DATA = {
+  weeks: [
+    {n:1, theme:"Country Song",      hint:"Pick a country song to work on this week."},
+    {n:2, theme:"Pop Song",          hint:"Pick a pop song to work on this week."},
+    {n:3, theme:"80s Song",          hint:"Pick an 80s song to work on this week."},
+    {n:4, theme:"R&B Song",          hint:"Pick an R&B song to work on this week."},
+    {n:5, theme:"Pop → Country",     hint:"Take a pop song and arrange it as country."},
+    {n:6, theme:"Country → Pop",     hint:"Take a country song and arrange it as pop."}
+  ],
+  days: [
+    {n:1, assign:"Learn Song",            workout:"30-Minute Walk"},
+    {n:2, assign:"Memorize Song",         workout:"Full Body Strength"},
+    {n:3, assign:"Continue Memorization", workout:"30-Minute Walk"},
+    {n:4, assign:"Record",                workout:"Upper Body Strength"},
+    {n:5, assign:"Review & Make Edits",   workout:"Lower Body Strength"}
+  ],
+  library: [
+    {name:"New York Vocal Coaching", url:"https://www.youtube.com/user/NewYorkVocalCoaching"},
+    {name:"Jacobs Vocal Academy",    url:"https://www.youtube.com/channel/UCc4sOlYxxoXNba2CYCRQJGw"},
+    {name:"Eric Arceneaux",          url:"https://www.youtube.com/c/ericarceneaux"},
+    {name:"Straw Phonation",         url:"https://www.youtube.com/watch?v=0xYDvwvmBIM"}
+  ],
+  warmups: ["Straw Phonation / SOVT","Lip Trills","Sirens","Five-Tone Scales","Octave Slides","Mix Voice Sirens"],
+  health:  ["Sleep goal","Hydration goal (80–100 oz)","Protein goal","Tea","Stretching"],
+  workoutLinks: {
+    "30-Minute Walk":      "https://www.youtube.com/results?search_query=30+minute+indoor+walking+workout",
+    "Full Body Strength":  "https://youtu.be/g_gHHMdi8qc",
+    "Upper Body Strength": "https://youtu.be/54ijffSkj2c",
+    "Lower Body Strength": "https://youtu.be/fu6207UeF7w"
+  }
+};
+const TOTAL_ITEMS = DATA.warmups.length + DATA.health.length + 1; // 6 + 5 + 1 workout = 12
+
+/* ============ state + persistence ============ */
+const KEY = "vocalPrep.v1";
+let canSave = true;
+let state = load();
+
+function blankDay(){ return {warm:Array(DATA.warmups.length).fill(false), health:Array(DATA.health.length).fill(false), workout:false, notes:"", done:false}; }
+function blankState(){
+  const weeks={};
+  for(let w=1; w<=6; w++){ const days={}; for(let d=1; d<=5; d++) days[d]=blankDay(); weeks[w]={song:"", days}; }
+  return {weeks, workoutLinks:{}};
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    localStorage.setItem(KEY+".test","1"); localStorage.removeItem(KEY+".test");
+    if(!raw) return blankState();
+    const parsed = JSON.parse(raw);
+    if(!parsed.workoutLinks) parsed.workoutLinks = {};
+    return parsed;
+  }catch(e){ canSave=false; return blankState(); }
+}
+function save(){ if(!canSave) return; try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ canSave=false; } }
+function wlink(type){ return (state.workoutLinks && state.workoutLinks[type]) || DATA.workoutLinks[type]; }
+
+/* ---- song helpers ---- */
+function songText(song){ // compact one-line label for cards
+  if(!song) return "";
+  if(typeof song==="string") return song;
+  return song.title + (song.artist ? " · "+song.artist : "");
+}
+function spotifyLink(title, artist){
+  return "https://open.spotify.com/search/"+encodeURIComponent((title+" "+(artist||"")).trim());
+}
+/* JSONP request (iTunes Search supports a callback param, so this works from a file with no login) */
+function jsonp(url, cb){
+  const id = "_vp_cb_"+Math.random().toString(36).slice(2);
+  const s = document.createElement("script");
+  let done=false;
+  const finish = (data)=>{ if(done)return; done=true; try{delete window[id];}catch(e){window[id]=undefined;} s.remove(); cb(data); };
+  window[id] = (data)=>finish(data);
+  s.onerror = ()=>finish(null);
+  s.src = url + (url.indexOf("?")>-1?"&":"?") + "callback="+id;
+  document.body.appendChild(s);
+  setTimeout(()=>finish(null), 8000); // network/offline guard
+}
+function mapSongs(data){
+  if(!data || !Array.isArray(data.results)) return null;
+  return data.results.map(r=>({
+    title:r.trackName || "",
+    artist:r.artistName || "",
+    art:(r.artworkUrl100 || r.artworkUrl60 || "").replace("100x100bb","160x160bb").replace("100x100","160x160"),
+    spotify:spotifyLink(r.trackName||"", r.artistName||"")
+  })).filter(x=>x.title);
+}
+function searchSongs(q, cb){
+  const term = q.trim();
+  if(!term){ cb([]); return; }
+  const url = "https://itunes.apple.com/search?media=music&entity=song&limit=7&term="+encodeURIComponent(term);
+  // Primary: direct fetch (Apple sends Access-Control-Allow-Origin: *, so CORS is allowed)
+  fetch(url, {mode:"cors"})
+    .then(res=>{ if(!res.ok) throw new Error("HTTP "+res.status); return res.json(); })
+    .then(data=>cb(mapSongs(data)))
+    .catch(()=>{
+      // Fallback: JSONP via <script> injection
+      jsonp(url, (data)=>cb(mapSongs(data)));
+    });
+}
+
+
+/* ============ helpers ============ */
+const app = document.getElementById("app");
+const el = (tag, attrs={}, html) => { const e=document.createElement(tag); for(const k in attrs){ if(k==="class")e.className=attrs[k]; else e.setAttribute(k,attrs[k]); } if(html!=null)e.innerHTML=html; return e; };
+function dayItemsDone(dy){ return dy.warm.filter(Boolean).length + dy.health.filter(Boolean).length + (dy.workout?1:0); }
+function weekDaysDone(w){ let c=0; for(let d=1; d<=5; d++) if(state.weeks[w].days[d].done) c++; return c; }
+
+const ICON = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v4"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
+  dumbbell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11"/><path d="M21 21l-1-1"/><path d="M3 3l1 1"/><path d="M18 22l4-4"/><path d="M2 6l4-4"/><path d="M3 10l7-7"/><path d="M14 21l7-7"/></svg>',
+  note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22V4"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+  spotify:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3a.75.75 0 0 1-1 .25c-2.8-1.7-6.3-2.1-10.5-1.1a.75.75 0 1 1-.33-1.46c4.6-1 8.5-.6 11.6 1.3.36.22.47.69.25 1.02zm1.47-3.27a.94.94 0 0 1-1.29.31c-3.2-2-8.1-2.5-11.9-1.36a.94.94 0 1 1-.54-1.8c4.3-1.3 9.7-.74 13.4 1.55.44.27.58.85.31 1.3zm.13-3.4C15.8 8.2 8.3 7.97 4.86 9.02a1.12 1.12 0 1 1-.65-2.15c3.95-1.2 12.2-.97 16.4 1.5a1.12 1.12 0 1 1-1.14 1.93z"/></svg>'
+};
+
+/* ============ views ============ */
+function clear(){ app.innerHTML=""; }
+
+function renderHome(){
+  clear();
+  const bar = el("div",{class:"topbar"});
+  bar.appendChild(el("div",{class:"brand"},"Vocal Prep"));
+  const gear = el("button",{class:"gear","aria-label":"Settings"}, ICON.gear);
+  gear.onclick = openSettings; bar.appendChild(gear);
+  app.appendChild(bar);
+
+  if(!canSave) app.appendChild(el("div",{class:"save-warn"},
+    "Heads up: this device isn't letting the app save progress. Open it from a web link (not a downloaded file) and it'll remember everything."));
+
+  app.appendChild(el("div",{class:"eyebrow"},"Six-week cycle"));
+  app.appendChild(el("h1",{class:"title"},"What to sing today"));
+  app.appendChild(el("p",{class:"lede"},"One challenge a week, five days each. Pick a screen and start where you left off."));
+
+  const wrap = el("div",{class:"weeks"});
+  DATA.weeks.forEach(wk=>{
+    const w = state.weeks[wk.n];
+    const done = weekDaysDone(wk.n);
+    const isComplete = done === 5;
+    const card = el("button",{class:"week-card"+(isComplete?" complete":"")});
+    const top = el("div",{class:"wc-top"});
+    top.appendChild(el("span",{class:"wc-eye"},"Week "+wk.n));
+    if(isComplete) top.appendChild(el("span",{class:"wc-badge"}, ICON.check+"<span>Complete</span>"));
+    card.appendChild(top);
+    card.appendChild(el("div",{class:"wc-theme"},wk.theme));
+    const songObj = (w.song && typeof w.song==="object") ? w.song : null;
+    if(songObj && songObj.art){
+      const song = el("div",{class:"wc-song set with-art"});
+      song.appendChild(el("img",{class:"wcs-thumb",src:songObj.art,alt:"",loading:"lazy"}));
+      const t = el("div",{class:"wcs-text"});
+      t.appendChild(el("div",{class:"wcs-title"}, escapeHtml(songObj.title)));
+      if(songObj.artist) t.appendChild(el("div",{class:"wcs-artist"}, escapeHtml(songObj.artist)));
+      song.appendChild(t);
+      card.appendChild(song);
+    } else {
+      const song = el("div",{class:"wc-song"+(w.song?" set":"")}, w.song ? "♪ "+escapeHtml(songText(w.song)) : "Tap to set your song");
+      card.appendChild(song);
+    }
+    const dots = el("div",{class:"dots"});
+    for(let i=0;i<5;i++) dots.appendChild(el("span",{class:"dot"+(i<done?" full":"")}));
+    dots.appendChild(el("span",{class:"count"}, isComplete ? "All 5 days done" : done+" of 5 days"));
+    card.appendChild(dots);
+    card.onclick = ()=>renderWeek(wk.n);
+    wrap.appendChild(card);
+  });
+  app.appendChild(wrap);
+  window.scrollTo(0,0);
+}
+
+function renderWeek(wn){
+  clear();
+  const wk = DATA.weeks[wn-1];
+  const w = state.weeks[wn];
+
+  const bar = el("div",{class:"topbar"});
+  const back = el("button",{class:"back"}, ICON.back+"<span>Weeks</span>");
+  back.onclick = renderHome; bar.appendChild(back);
+  const gear = el("button",{class:"gear","aria-label":"Settings"}, ICON.gear);
+  gear.onclick = openSettings; bar.appendChild(gear);
+  app.appendChild(bar);
+
+  app.appendChild(el("div",{class:"eyebrow"},"Week "+wn));
+  app.appendChild(el("h1",{class:"title"},wk.theme));
+  app.appendChild(el("p",{class:"lede"},wk.hint));
+
+  const field = el("div",{class:"song-field"});
+  renderSongField(field, w);
+  app.appendChild(field);
+
+  const list = el("div",{class:"day-list"});
+  DATA.days.forEach(d=>{
+    const dy = w.days[d.n];
+    const row = el("button",{class:"day-row"+(dy.done?" done":"")});
+    row.appendChild(el("span",{class:"num"}, dy.done ? ICON.check : String(d.n)));
+    const body = el("div",{class:"dr-body"});
+    body.appendChild(el("div",{class:"dr-eye"},"Day "+d.n));
+    body.appendChild(el("div",{class:"dr-assign"},d.assign));
+    row.appendChild(body);
+    const items = dayItemsDone(dy);
+    row.appendChild(el("span",{class:"mini"}, dy.done ? "Done" : (items>0 ? items+"/"+TOTAL_ITEMS : "")));
+    row.appendChild(el("span",{class:"chev"}, ICON.chev));
+    row.onclick = ()=>renderDay(wn,d.n);
+    list.appendChild(row);
+  });
+  app.appendChild(list);
+  window.scrollTo(0,0);
+}
+
+function renderDay(wn,dn){
+  clear();
+  const wk = DATA.weeks[wn-1];
+  const d  = DATA.days[dn-1];
+  const w  = state.weeks[wn];
+  const dy = w.days[dn];
+
+  const bar = el("div",{class:"topbar"});
+  const back = el("button",{class:"back"}, ICON.back+"<span>Week "+wn+"</span>");
+  back.onclick = ()=>renderWeek(wn); bar.appendChild(back);
+  const gear = el("button",{class:"gear","aria-label":"Settings"}, ICON.gear);
+  gear.onclick = openSettings; bar.appendChild(gear);
+  app.appendChild(bar);
+
+  /* head with breath ring */
+  const head = el("div",{class:"day-head"});
+  const C = 2*Math.PI*43;
+  const rw = el("div",{class:"ring-wrap"});
+  rw.innerHTML =
+    '<svg class="ring" viewBox="0 0 96 96">'
+    +'<circle class="ring-bg" cx="48" cy="48" r="43"/>'
+    +'<circle class="ring-fg" id="ringFg" cx="48" cy="48" r="43" stroke-dasharray="'+C+'" stroke-dashoffset="'+C+'"/>'
+    +'</svg><div class="ring-label"><span class="n" id="ringN">0</span><span class="t" id="ringT">of '+TOTAL_ITEMS+'</span></div>';
+  head.appendChild(rw);
+  const dht = el("div",{class:"dh-text"});
+  dht.appendChild(el("div",{class:"dh-eye"},"Week "+wn+" · Day "+dn));
+  dht.appendChild(el("h1",{},d.assign));
+  dht.appendChild(el("div",{class:"dh-song"}, w.song ? "♪ "+escapeHtml(songText(w.song)) : "No song set for this week yet"));
+  head.appendChild(dht);
+  app.appendChild(head);
+
+  /* 1. warm-up library */
+  const lib = block(ICON.mic,"Warm-up library","one tap");
+  const grid = el("div",{class:"lib"});
+  DATA.library.forEach(r=>{
+    const a = el("a",{href:r.url,target:"_blank",rel:"noopener"});
+    a.appendChild(el("span",{class:"play"}, ICON.play));
+    a.appendChild(el("span",{},r.name));
+    grid.appendChild(a);
+  });
+  lib.appendChild(grid);
+  app.appendChild(lib);
+
+  /* 2. vocal warm-ups */
+  const wu = block(ICON.mic,"Vocal warm-ups");
+  wu.appendChild(checklist(DATA.warmups, dy.warm, "warm"));
+  app.appendChild(wu);
+
+  /* 3. singer health */
+  const he = block(ICON.heart,"Singer health");
+  he.appendChild(checklist(DATA.health, dy.health, "health"));
+  app.appendChild(he);
+
+  /* 4. conditioning */
+  const co = block(ICON.dumbbell,"Conditioning");
+  const work = el("div",{class:"work"});
+  work.appendChild(el("span",{class:"wname"}, d.workout));
+  const res = el("a",{class:"res",href:wlink(d.workout),target:"_blank",rel:"noopener"}, ICON.ext+"<span>Resource</span>");
+  work.appendChild(res);
+  co.appendChild(work);
+  const wch = checklist(["Workout complete"], [dy.workout], "workout");
+  co.appendChild(wch);
+  const ed = el("button",{class:"edit-link"},"Change workout link");
+  ed.onclick = ()=>{
+    const cur = wlink(d.workout);
+    const v = prompt("Resource link for \""+d.workout+"\":", cur);
+    if(v && v.trim()){ state.workoutLinks[d.workout] = v.trim(); save(); res.setAttribute("href", v.trim()); }
+  };
+  co.appendChild(ed);
+  app.appendChild(co);
+
+  /* 5. today's song */
+  const so = block(ICON.note,"Today's song", d.assign.toLowerCase());
+  const ta = el("textarea",{class:"notes",placeholder:"Notes\n•\n•\n•"});
+  ta.value = dy.notes||"";
+  ta.addEventListener("input", ()=>{ dy.notes = ta.value; save(); });
+  so.appendChild(ta);
+  app.appendChild(so);
+
+  /* 6. day complete */
+  const cbtn = el("button",{class:"complete-btn"+(dy.done?" done":"")});
+  function paintComplete(){ cbtn.innerHTML = (dy.done?ICON.check:ICON.flag)+"<span>"+(dy.done?"Day complete":"Mark day complete")+"</span>"; cbtn.classList.toggle("done",dy.done); }
+  paintComplete();
+  cbtn.onclick = ()=>{
+    dy.done = !dy.done; save(); paintComplete();
+    cbtn.classList.remove("ready");
+    if(dy.done){
+      const r = cbtn.getBoundingClientRect();
+      const origin = {x:r.left + r.width/2, y:r.top};
+      const weekDone = weekDaysDone(wn) === 5;
+      const cycleDone = weekDone && allWeeksComplete();
+      cbtn.classList.remove("justdone"); void cbtn.offsetWidth; cbtn.classList.add("justdone");
+      if(cycleDone){ confetti(Object.assign({count:240}, origin)); buzz([0,60,40,60,40,80]); cheer("Cycle complete! \uD83C\uDF89","All six weeks done. Incredible."); }
+      else if(weekDone){ confetti(Object.assign({count:180}, origin)); buzz([0,50,40,60]); cheer("Week "+wn+" complete!","All five days done."); }
+      else { confetti(Object.assign({count:130}, origin)); buzz([0,40,30,40]); cheer("Day complete!", encouragement()); }
+    }
+  };
+  app.appendChild(cbtn);
+
+  updateRing(dy);
+  if(dayItemsDone(dy) === TOTAL_ITEMS && !dy.done) cbtn.classList.add("ready");
+  window.scrollTo(0,0);
+}
+
+/* ---- shared builders ---- */
+function renderSongField(field, w){
+  field.innerHTML = "";
+  field.appendChild(el("label",{},"This week's song"));
+
+  if(w.song){
+    const s = (typeof w.song==="string") ? {title:w.song, artist:"", art:"", spotify:spotifyLink(w.song,"")} : w.song;
+    const card = el("div",{class:"selected"});
+    if(s.art){ const img=el("img",{class:"art",src:s.art,alt:""}); card.appendChild(img); }
+    else { const ph=el("span",{class:"art"}, ICON.note); card.appendChild(ph); }
+    const meta = el("div",{class:"smeta"});
+    meta.appendChild(el("div",{class:"stitle"}, escapeHtml(s.title)));
+    if(s.artist) meta.appendChild(el("div",{class:"sartist"}, escapeHtml(s.artist)));
+    const actions = el("div",{class:"sactions"});
+    const sp = el("a",{class:"spotify",href:s.spotify||spotifyLink(s.title,s.artist),target:"_blank",rel:"noopener"}, ICON.spotify+"<span>Open in Spotify</span>");
+    actions.appendChild(sp);
+    const ch = el("button",{class:"change"},"Change");
+    ch.onclick = ()=>{ w.song=""; save(); renderSongField(field, w); const i=field.querySelector("input"); if(i)i.focus(); };
+    actions.appendChild(ch);
+    meta.appendChild(actions);
+    card.appendChild(meta);
+    field.appendChild(card);
+    return;
+  }
+
+  // search mode
+  const sw = el("div",{class:"song-search"});
+  sw.appendChild(el("span",{class:"si"}, ICON.search));
+  const inp = el("input",{type:"search",placeholder:"Search for a song…","autocomplete":"off","autocorrect":"off","spellcheck":"false"});
+  sw.appendChild(inp);
+  const spin = el("span",{class:"spin"});
+  sw.appendChild(spin);
+  field.appendChild(sw);
+
+  const results = el("ul",{class:"results"});
+  field.appendChild(results);
+
+  let timer=null, seq=0, lastItems=[];
+
+  function pick(song){ w.song = song; save(); renderSongField(field, w); }
+
+  function paint(items, typed, msg){
+    results.innerHTML = "";
+    if(msg){ const m=el("li",{class:"rhint"},msg); results.appendChild(m); }
+    items.forEach(it=>{
+      const li = el("li",{});
+      if(it.art){ li.appendChild(el("img",{class:"thumb",src:it.art,alt:""})); }
+      else { li.appendChild(el("span",{class:"thumb"}, ICON.note)); }
+      const m = el("div",{class:"rmeta"});
+      m.appendChild(el("div",{class:"rt"}, escapeHtml(it.title)));
+      m.appendChild(el("div",{class:"ra"}, escapeHtml(it.artist)));
+      li.appendChild(m);
+      li.onclick = ()=>pick(it);
+      results.appendChild(li);
+    });
+    if(typed){
+      const li = el("li",{class:"as-typed"});
+      li.appendChild(el("span",{class:"thumb"}, ICON.note));
+      const m = el("div",{class:"rmeta"});
+      m.appendChild(el("div",{class:"rt"}, "Use “"+escapeHtml(typed)+"”"));
+      m.appendChild(el("div",{class:"ra"}, "as typed"));
+      li.appendChild(m);
+      li.onclick = ()=>pick({title:typed, artist:"", art:"", spotify:spotifyLink(typed,"")});
+      results.appendChild(li);
+    }
+    results.classList.toggle("show", results.children.length>0);
+  }
+
+  inp.addEventListener("input", ()=>{
+    const q = inp.value.trim();
+    clearTimeout(timer);
+    if(!q){ results.classList.remove("show"); spin.style.display="none"; return; }
+    timer = setTimeout(()=>{
+      const mine = ++seq;
+      spin.style.display="block";
+      searchSongs(q, (items)=>{
+        if(mine!==seq) return; // stale
+        spin.style.display="none";
+        if(items===null){ paint([], q, "Can't reach song search — check your connection. You can still use it as typed."); }
+        else { lastItems=items; paint(items, q, items.length?null:"No matches — use it as typed."); }
+      });
+    }, 350);
+  });
+  inp.addEventListener("keydown", e=>{
+    if(e.key==="Enter"){ e.preventDefault(); const q=inp.value.trim(); if(q) pick({title:q, artist:"", art:"", spotify:spotifyLink(q,"")}); }
+  });
+}
+
+function block(icon,heading,sub){
+  const s = el("section",{class:"block"});
+  const h = el("div",{class:"block-h"});
+  h.appendChild(el("span",{class:"bi"}, icon));
+  h.appendChild(el("h2",{},heading));
+  if(sub) h.appendChild(el("span",{class:"sub"},sub));
+  s.appendChild(h);
+  return s;
+}
+function checklist(labels, arr, kind){
+  const wrap = el("div",{class:"checks"});
+  labels.forEach((label,i)=>{
+    const pressed = kind==="workout" ? !!arr[0] : !!arr[i];
+    const b = el("button",{class:"check","aria-pressed":pressed?"true":"false"});
+    b.appendChild(el("span",{class:"box"}, ICON.check));
+    b.appendChild(el("span",{class:"lbl"}, label));
+    b.onclick = ()=>{
+      const now = b.getAttribute("aria-pressed")!=="true";
+      b.setAttribute("aria-pressed", now?"true":"false");
+      const dy = currentDay();
+      const before = dayItemsDone(dy);
+      if(kind==="workout") dy.workout = now; else dy[kind][i] = now;
+      const after = dayItemsDone(dy);
+      save(); updateRing(dy);
+      if(now){
+        const box = b.querySelector(".box");
+        box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop");
+        buzz(12);
+      }
+      if(before < TOTAL_ITEMS && after === TOTAL_ITEMS){
+        const ring = document.querySelector(".ring");
+        if(ring){ ring.classList.remove("pulse"); void ring.offsetWidth; ring.classList.add("pulse"); }
+        const cb = document.querySelector(".complete-btn");
+        if(cb && !cb.classList.contains("done")) cb.classList.add("ready");
+        buzz([0,30,40,30]);
+        cheer("All exercises done!", "Tap \u201CMark day complete.\u201D");
+      } else if(after < TOTAL_ITEMS){
+        const cb = document.querySelector(".complete-btn");
+        if(cb) cb.classList.remove("ready");
+      }
+    };
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+let CUR = {w:1,d:1};
+function currentDay(){ return state.weeks[CUR.w].days[CUR.d]; }
+function updateRing(dy){
+  const fg=document.getElementById("ringFg"); if(!fg) return;
+  const n = dayItemsDone(dy);
+  const C = 2*Math.PI*43;
+  fg.setAttribute("stroke-dashoffset", C*(1 - n/TOTAL_ITEMS));
+  document.getElementById("ringN").textContent = n;
+}
+
+/* track current day for checklist updates */
+const _renderDay = renderDay;
+renderDay = function(wn,dn){ CUR={w:wn,d:dn}; _renderDay(wn,dn); };
+
+/* ============ settings sheet ============ */
+const overlay = document.getElementById("overlay");
+const sheet = document.getElementById("sheet");
+function openSettings(){
+  sheet.innerHTML = "";
+  sheet.appendChild(el("div",{class:"grab"}));
+  sheet.appendChild(el("h2",{},"Settings"));
+  sheet.appendChild(el("p",{class:"shsub"},"Tune the resources and start fresh cycles here."));
+
+  const g1 = el("div",{class:"set-group"});
+  g1.appendChild(el("h3",{},"Workout links"));
+  Object.keys(DATA.workoutLinks).forEach(type=>{
+    const row = el("div",{class:"set-row"});
+    row.appendChild(el("label",{},type));
+    const inp = el("input",{type:"url",value:wlink(type)});
+    inp.addEventListener("input", ()=>{ state.workoutLinks[type]=inp.value; save(); });
+    row.appendChild(inp);
+    g1.appendChild(row);
+  });
+  sheet.appendChild(g1);
+
+  const g2 = el("div",{class:"set-group"});
+  g2.appendChild(el("h3",{},"Add to home screen"));
+  g2.appendChild(el("div",{class:"tip"},"On iPhone, open this in Safari, tap <b>Share</b>, then <b>Add to Home Screen</b>. It opens full-screen like an app. (On Android, use Chrome's menu &rarr; <b>Add to Home screen</b>.)"));
+  sheet.appendChild(g2);
+
+  const g3 = el("div",{class:"set-group"});
+  g3.appendChild(el("h3",{},"New cycle"));
+  g3.appendChild(el("div",{class:"tip",style:"margin-bottom:10px"},"Starting a new cycle clears every checkbox, note, and song title so you can run the six weeks again with new songs."));
+  const dbtn = el("button",{class:"danger"},"Start a new six-week cycle");
+  dbtn.onclick = ()=>{
+    if(confirm("Clear all progress, notes, and songs to start a fresh cycle? This can't be undone.")){
+      state = blankState(); save(); closeSettings(); renderHome();
+    }
+  };
+  g3.appendChild(dbtn);
+  sheet.appendChild(g3);
+
+  const close = el("button",{class:"closebtn"},"Done");
+  close.onclick = closeSettings;
+  sheet.appendChild(close);
+
+  overlay.classList.add("open");
+}
+function closeSettings(){ overlay.classList.remove("open"); }
+overlay.addEventListener("click", e=>{ if(e.target===overlay) closeSettings(); });
+
+/* ============ util ============ */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ============ celebration ============ */
+const REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function buzz(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+const CHEERS = ["Great job!","Nice work!","You showed up!","Beautifully done.","That's the habit.","Proud of you.","Keep it going!"];
+function encouragement(){ return CHEERS[(Math.random()*CHEERS.length)|0]; }
+
+function cheer(msg, sub){
+  const t = el("div",{class:"cheer"});
+  t.appendChild(el("div",{class:"cheer-ic"}, ICON.check));
+  const tx = el("div",{class:"cheer-tx"});
+  tx.appendChild(el("div",{class:"ct"}, escapeHtml(msg)));
+  if(sub) tx.appendChild(el("div",{class:"cs"}, escapeHtml(sub)));
+  t.appendChild(tx);
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add("in"));
+  setTimeout(()=>{ t.classList.remove("in"); setTimeout(()=>t.remove(), 320); }, 1700);
+}
+
+function confetti(opts){
+  opts = opts||{};
+  if(REDUCED) return;
+  const count = opts.count || 130;
+  const cv = document.createElement("canvas");
+  cv.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:200";
+  const W = window.innerWidth, H = window.innerHeight;
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  cv.width = W*dpr; cv.height = H*dpr;
+  const ctx = cv.getContext("2d"); ctx.scale(dpr,dpr);
+  document.body.appendChild(cv);
+  const colors = ["#D9943C","#4A3450","#F0C98A","#7C8B6F","#FFFFFF","#6B5071"];
+  const cx = opts.x!=null ? opts.x : W/2;
+  const cy = opts.y!=null ? opts.y : H*0.4;
+  const parts = [];
+  for(let i=0;i<count;i++){
+    const a = Math.random()*Math.PI*2, sp = 4+Math.random()*9;
+    parts.push({x:cx,y:cy,vx:Math.cos(a)*sp*(0.5+Math.random()),vy:Math.sin(a)*sp*(0.5+Math.random())-5,
+      g:0.18+Math.random()*0.13, w:6+Math.random()*6, h:8+Math.random()*9,
+      rot:Math.random()*Math.PI, vr:(Math.random()-0.5)*0.32,
+      color:colors[(Math.random()*colors.length)|0], life:0, ttl:70+Math.random()*45});
+  }
+  let frame=0;
+  (function tick(){
+    frame++; ctx.clearRect(0,0,W,H); let alive=false;
+    for(const p of parts){
+      if(p.life>p.ttl) continue;
+      alive=true; p.life++; p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.rot+=p.vr;
+      ctx.save(); ctx.globalAlpha=Math.max(0,1-p.life/p.ttl); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    }
+    if(alive && frame<260) requestAnimationFrame(tick); else cv.remove();
+  })();
+}
+
+function allWeeksComplete(){ for(let w=1;w<=6;w++) if(weekDaysDone(w)<5) return false; return true; }
+
+/* ============ go ============ */
+renderHome();
+</script>
+</body>
+</html>
